@@ -102,7 +102,7 @@ print("3. Unstarring user repos who unstarred this one")
 for gazer in saved_stargazers:
     if gazer not in stargazers:
         for repo in GithubAPI.get_user_repositories(gazer, bot_github_token):
-            # GithubAPI.unstar_repository(gazer, repo, bot_github_token)
+            GithubAPI.unstar_repository(gazer, repo, bot_github_token)
             print(f"Unstarred {gazer}/{repo}")
 print("")
 
@@ -110,7 +110,7 @@ print("4. Star all users repos that starred this one")
 for gazer in stargazers:
     user_repos = GithubAPI.get_user_repositories(gazer, bot_github_token)
     for repo in user_repos:
-        # GithubAPI.star_repository(gazer, repo, bot_github_token)
+        GithubAPI.star_repository(gazer, repo, bot_github_token)
         print(f"Starred {gazer}/{repo}")
 print("")
 
