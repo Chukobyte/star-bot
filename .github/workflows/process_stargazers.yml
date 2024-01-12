@@ -1,0 +1,33 @@
+name: process-stargazers
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  process-stargazers-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: download stargazers db file
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: stargazers_db.json
+          workflow: process_stargazers.yml
+          search_artifacts: true
+          if_no_artifact_found: ignore
+
+      - name: process stargazers
+        env:
+          STAR_BOT_GITHUB_TOKEN: ${{ secrets.STAR_BOT_GITHUB_TOKEN }}
+        run: |
+          python main.py
+
+      - name: store updated stargazers db file
+        uses: actions/upload-artifact@v3
+        with:
+          name: stargazers_db.json
+          path: stargazers_db.json
+          if-no-files-found: error
