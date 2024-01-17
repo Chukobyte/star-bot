@@ -23,7 +23,7 @@ jobs:
         env:
           STAR_BOT_GITHUB_TOKEN: ${{ secrets.STAR_BOT_GITHUB_TOKEN }}
         run: |
-          python main.py
+          python process_stargazers.py
 
       - name: store updated stargazers db file
         uses: actions/upload-artifact@v3

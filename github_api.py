@@ -1,11 +1,38 @@
-import json
-import os
-from typing import List
+import random
+from typing import List, Optional, Tuple
 
 import requests
 
 
 class GithubAPI:
+    @staticmethod
+    def get_public_repos() -> List[dict]:
+        url = 'https://api.github.com/repositories'
+        repositories = []
+        # Send a GET request to the GitHub API
+        response = requests.get(url)
+
+        # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            # Parse the JSON response
+            repositories = response.json()
+            random.shuffle(repositories)
+        else:
+            print("Error fetching random repository")
+        return repositories
+
+    @staticmethod
+    def get_random_unstarred_repo(owner: str, token: str) -> Optional[Tuple[str, str, str]]:
+        for repo in GithubAPI.get_public_repos():
+            print(f"repo = {repo}")
+            repo_name = repo["name"]
+            repo_url = repo["html_url"]
+            repo_username = repo["owner"]["login"]
+            if not GithubAPI.has_user_starred_repo(owner, repo_name, token):
+                return repo_name, repo_url, repo_username
+        return None
+
+
     @staticmethod
     def get_repo_stargazers(owner: str, repo:str, token: str) -> List[str]:
         url = f'https://api.github.com/repos/{owner}/{repo}/stargazers'
@@ -39,7 +66,26 @@ class GithubAPI:
             return []
 
     @staticmethod
-    def star_repository(owner, repo, token) -> bool:
+    def has_user_starred_repo(owner: str, repo_name: str, token: str) -> bool:
+        # GitHub API endpoint to check if a repository is starred by a user
+        url = f'https://api.github.com/user/starred/{owner}/{repo_name}'
+
+        # Set up headers with the user's personal access token for authentication
+        headers = {'Authorization': f'token {token}'}
+
+        # Send a GET request to the GitHub API
+        response = requests.get(url, headers=headers)
+
+        # Check if the request was successful (status code 204 means the repository is starred)
+        if response.status_code == 204:
+            return True
+        elif response.status_code == 404:
+            return False
+        else:
+            raise Exception(f"Failed to check repository star status.\nurl = {url}\nStatus Code: {response.status_code} Message: {response.text}")
+
+    @staticmethod
+    def star_repository(owner: str, repo: str, token: str) -> bool:
         url = f'https://api.github.com/user/starred/{owner}/{repo}'
         headers = {
             'Authorization': f'token {token}',
@@ -52,12 +98,12 @@ class GithubAPI:
             print(f"Starred {owner}/{repo} successfully!")
             return True
         else:
-            print(f"Failed to star {owner}/{repo}. Status code: {response.status_code}")
+            print(f"Failed to star {owner}/{repo}. Status code: {response.status_code} Message: {response.text}")
             print(response.text)
         return False
 
     @staticmethod
-    def unstar_repository(owner, repo, token) -> bool:
+    def unstar_repository(owner: str, repo: str, token: str) -> bool:
         url = f'https://api.github.com/user/starred/{owner}/{repo}'
         headers = {
             'Authorization': f'token {token}',
@@ -74,46 +120,3 @@ class GithubAPI:
             print(f"Failed to unstar {owner}/{repo}. Status code: {response.status_code}")
             print(response.text)
         return False
-
-
-owner_user_name = "Chukobyte"
-owner_repo = "star-bot"
-bot_github_token = os.getenv("STAR_BOT_GITHUB_TOKEN")
-stargazers_db_file_path = "stargazers_db.json"
-
-print("1. Loading stargazers db file if it exists")
-saved_stargazers = []
-try:
-    with open(stargazers_db_file_path, 'r') as json_file:
-        data = json.load(json_file)
-        saved_stargazers = data.get("users", [])
-        print(f"Stargazers db loaded!  Saved stargazers: {saved_stargazers}")
-except FileNotFoundError:
-    print(f"{stargazers_db_file_path} doesn't exist, skipping loading...")
-print("")
-
-print("2. Getting current stargazers")
-stargazers = GithubAPI.get_repo_stargazers(owner_user_name, owner_repo, bot_github_token)
-print(f"Current stargazers: {stargazers}")
-print(f"Current stargazers count: {len(stargazers)}")
-print("")
-
-print("3. Unstarring user repos who unstarred this one")
-for gazer in saved_stargazers:
-    if gazer not in stargazers:
-        for repo in GithubAPI.get_user_repositories(gazer, bot_github_token):
-            GithubAPI.unstar_repository(gazer, repo, bot_github_token)
-            print(f"Unstarred {gazer}/{repo}")
-print("")
-
-print("4. Star all users repos that starred this one")
-for gazer in stargazers:
-    user_repos = GithubAPI.get_user_repositories(gazer, bot_github_token)
-    for repo in user_repos:
-        GithubAPI.star_repository(gazer, repo, bot_github_token)
-        print(f"Starred {gazer}/{repo}")
-print("")
-
-print("5. Save the current stargazers for later use")
-with open("stargazers_db.json", 'w') as json_file:
-    json.dump({"users": stargazers}, json_file, indent=2)

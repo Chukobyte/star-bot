@@ -1,2 +1,3 @@
 .idea
-stargazers_db.json
+*_db.json
+__pycache__
