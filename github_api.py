@@ -24,7 +24,6 @@ class GithubAPI:
     @staticmethod
     def get_random_unstarred_repo(repo_owner: str, token: str) -> Optional[Tuple[str, str, str]]:
         for repo in GithubAPI.get_public_repos():
-            print(f"repo = {repo}")
             repo_name = repo["name"]
             repo_url = repo["html_url"]
             repo_username = repo["owner"]["login"]
