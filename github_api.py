@@ -22,20 +22,20 @@ class GithubAPI:
         return repositories
 
     @staticmethod
-    def get_random_unstarred_repo(owner: str, token: str) -> Optional[Tuple[str, str, str]]:
+    def get_random_unstarred_repo(repo_owner: str, token: str) -> Optional[Tuple[str, str, str]]:
         for repo in GithubAPI.get_public_repos():
             print(f"repo = {repo}")
             repo_name = repo["name"]
             repo_url = repo["html_url"]
             repo_username = repo["owner"]["login"]
-            if not GithubAPI.has_user_starred_repo(owner, repo_name, token):
+            if not GithubAPI.has_user_starred_repo(repo_owner, repo_name, token):
                 return repo_name, repo_url, repo_username
         return None
 
 
     @staticmethod
-    def get_repo_stargazers(owner: str, repo:str, token: str) -> List[str]:
-        url = f'https://api.github.com/repos/{owner}/{repo}/stargazers'
+    def get_repo_stargazers(repo_owner: str, repo_name: str, token: str) -> List[str]:
+        url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/stargazers'
         headers = {
             'Authorization': f'token {token}',
         }
@@ -45,7 +45,7 @@ class GithubAPI:
         if response.status_code == 200:
             return [user['login'] for user in response.json()]
         else:
-            print(f"Failed to get stargazers for {owner}/{repo}. Status code: {response.status_code}")
+            print(f"Failed to get stargazers for {repo_owner}/{repo_name}. Status code: {response.status_code}")
             print(response.text)
             return []
 
@@ -66,9 +66,9 @@ class GithubAPI:
             return []
 
     @staticmethod
-    def has_user_starred_repo(owner: str, repo_name: str, token: str) -> bool:
+    def has_user_starred_repo(repo_owner: str, repo_name: str, token: str) -> bool:
         # GitHub API endpoint to check if a repository is starred by a user
-        url = f'https://api.github.com/user/starred/{owner}/{repo_name}'
+        url = f'https://api.github.com/user/starred/{repo_owner}/{repo_name}'
 
         # Set up headers with the user's personal access token for authentication
         headers = {'Authorization': f'token {token}'}
@@ -85,8 +85,8 @@ class GithubAPI:
             raise Exception(f"Failed to check repository star status.\nurl = {url}\nStatus Code: {response.status_code} Message: {response.text}")
 
     @staticmethod
-    def star_repository(owner: str, repo: str, token: str) -> bool:
-        url = f'https://api.github.com/user/starred/{owner}/{repo}'
+    def star_repository(repo_owner: str, repo_name: str, token: str) -> bool:
+        url = f'https://api.github.com/user/starred/{repo_owner}/{repo_name}'
         headers = {
             'Authorization': f'token {token}',
             'Content-Length': '0',
@@ -95,16 +95,16 @@ class GithubAPI:
         response = requests.put(url, headers=headers)
 
         if response.status_code == 204:
-            print(f"Starred {owner}/{repo} successfully!")
+            print(f"Starred {repo_owner}/{repo_name} successfully!")
             return True
         else:
-            print(f"Failed to star {owner}/{repo}. Status code: {response.status_code} Message: {response.text}")
+            print(f"Failed to star {repo_owner}/{repo_name}. Status code: {response.status_code} Message: {response.text}")
             print(response.text)
         return False
 
     @staticmethod
-    def unstar_repository(owner: str, repo: str, token: str) -> bool:
-        url = f'https://api.github.com/user/starred/{owner}/{repo}'
+    def unstar_repository(repo_owner: str, repo_name: str, token: str) -> bool:
+        url = f'https://api.github.com/user/starred/{repo_owner}/{repo_name}'
         headers = {
             'Authorization': f'token {token}',
         }
@@ -112,11 +112,11 @@ class GithubAPI:
         response = requests.delete(url, headers=headers)
 
         if response.status_code == 204:
-            print(f"Unstarred {owner}/{repo} successfully!")
+            print(f"Unstarred {repo_owner}/{repo_name} successfully!")
             return True
         elif response.status_code == 404:
-            print(f"{owner}/{repo} is not starred by the user.")
+            print(f"{repo_owner}/{repo_name} is not starred by the user.")
         else:
-            print(f"Failed to unstar {owner}/{repo}. Status code: {response.status_code}")
+            print(f"Failed to unstar {repo_owner}/{repo_name}. Status code: {response.status_code}")
             print(response.text)
         return False
