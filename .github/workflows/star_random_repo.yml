@@ -1,0 +1,33 @@
+name: star-random-repo
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  process-stargazers-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: download starred repos db file
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: starred_repos_db.json
+          workflow: star_random_repo.yml
+          search_artifacts: true
+          if_no_artifact_found: ignore
+
+      - name: star random repo
+        env:
+          STAR_BOT_GITHUB_TOKEN: ${{ secrets.STAR_BOT_GITHUB_TOKEN }}
+        run: |
+          python star_random_repo.py
+
+      - name: store updated starred repos db file
+        uses: actions/upload-artifact@v3
+        with:
+          name: starred_repos_db.json
+          path: starred_repos_db.json
+          if-no-files-found: error
