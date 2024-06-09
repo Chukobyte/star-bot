@@ -4,7 +4,7 @@ A repo that will star all repositories of a user who has starred this one.  [Sta
 
 Another thing that star bot does is stars 3 random repos once a day.
 
-*Running into github api limits, will need to update*
+*Note: Running into github api limits, will need to update for star bot to star repos again*
 
 ## Star History
 
