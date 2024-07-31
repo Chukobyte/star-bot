@@ -9,15 +9,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v1
 
-    - name: Run star handler script
-      env:
-        GITHUB_TOKEN: ${{ secrets.STAR_BOT_GITHUB_TOKEN }}
-      run: |
-        if [ "${{ github.event.action }}" == "started" ]; then
-          echo "Repo starred by ${{ github.event.sender.login }}"
-        elif [ "${{ github.event.action }}" == "deleted" ]; then
-          echo "Repo unstarred by ${{ github.event.sender.login }}"
-        fi
+      - name: Run star handler script
+        env:
+          GITHUB_TOKEN: ${{ secrets.STAR_BOT_GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event.action }}" == "started" ]; then
+            echo "Repo starred by ${{ github.event.sender.login }}"
+          elif [ "${{ github.event.action }}" == "deleted" ]; then
+            echo "Repo unstarred by ${{ github.event.sender.login }}"
+          fi
