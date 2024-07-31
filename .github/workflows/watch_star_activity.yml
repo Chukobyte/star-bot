@@ -2,15 +2,14 @@ name: watch-star-activity
 
 on:
   watch:
-    types:
-      - started
+    types: [started]
 
 jobs:
   handle-stars:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - name: Run star handler script
         env:
