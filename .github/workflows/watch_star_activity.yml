@@ -2,7 +2,8 @@ name: watch-star-activity
 
 on:
   watch:
-    types: [started]
+    types:
+      - started
 
 jobs:
   handle-stars:
